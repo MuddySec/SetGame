@@ -181,15 +181,15 @@ def check_position(event_pos, window, text_output_window, cartas):
             if (i in selected):
                 #Si la carta estaba seleccionada, la deselecciona
                 selected.remove(i)
-                mark_selection(c,(255,255,255),False)
+                mark_selection(c,(255,255,255),False,window)
             else :
                 #Si no estaba seleccionada, comprueba cuantas habia seleccionadas
                 if (len(selected)<3) : 
                     #Si habia menos de 3, la selecciona
                     selected.append(i)
-                    mark_selection(c,(255,255,100),False)
+                    mark_selection(c,(255,255,100),False,window)
                 #Si hay 3 seleccionada, no selecciona la clicada e informa de que maximo se pueden seleccionar 3
-                else : draw_output_text(text_output_window,"SOLO PUEDES SELECCIONAR 3!",R)
+                else : draw_output_text(text_output_window,"SOLO PUEDES SELECCIONAR 3!",config.R, window)
             #Devuelve selected (con las posiciones de 0 a 11 de las cartas seleccionadas)
             return selected
         i = i+1
@@ -202,11 +202,11 @@ def mark_selection(c,color,is_hint, window):
     mark = pygame.draw.rect(window, color, new_c, 9, border_radius=5)
     return mark
 
-def mark_hint(carta,hint):
+def mark_hint(carta,hint,window):
     if hint:
-            return mark_selection (carta,(153,204,255),True)
+            return mark_selection (carta,(153,204,255),True, window)
     else : 
-            return mark_selection (carta,config.GREY,True)
+            return mark_selection (carta,config.GREY,True, window)
 
 def show_hint():
     if not sets:

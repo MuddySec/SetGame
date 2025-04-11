@@ -22,7 +22,7 @@ def draw_circle (color, numero, relleno, carta, window):
         circulos.append (pygame.draw.rect(window, color, circle_rect.move(0,-offset),width=w, border_radius=radio))
         circulos.append (pygame.draw.rect(window, color, circle_rect.move(0,offset),width=w, border_radius=radio))
 
-    if (relleno == S): 
+    if (relleno == config.S): 
         draw_lines_circle (color,circulos,radio, window)
 
 def rounded_border_profile(radius, x):
@@ -109,7 +109,7 @@ def draw_diamond (color, numero, relleno, carta, window):
     rombo_rect = carta.inflate (-60,-160)
     diamonds = []
 
-    w = 0 if relleno == F else 2  # Define grosor del borde
+    w = 0 if relleno == config.F else 2  # Define grosor del borde
     offset = 20 if numero == 2 else 40  # Define desplazamiento
 
     if (numero % 2 == 1) :
