@@ -57,7 +57,7 @@ def change_tablero(new, window):
     check_table()
     i = 0
     for c in list_tablero:
-        deal_cards(c,cartas[i])
+        deal_cards(c,cartas[i],window)
         i = i + 1
     return (cartas)
 
@@ -84,7 +84,7 @@ def change_three(old, new, window):
     check_table()
     i = 0
     for c in list_tablero:
-        deal_cards(c,cartas[i])
+        deal_cards(c,cartas[i],window)
         i = i + 1
     return (cartas)
 
@@ -147,7 +147,7 @@ def change_lista_cartas(old,new):
     for carta_old in old:
         list_cartas.append(carta_old)
 
-def deal_cards(c,pos):
+def deal_cards(c,pos,window):
     #Si la carta es 'NULL', hace un return
     #Si no, llama a las funciones de dibujar formas con los valores de la carta pasada
     if (c == 'NULL'):
@@ -165,11 +165,11 @@ def deal_cards(c,pos):
 
     match forma:
         case "W":
-            graphics.draw_wave(color,numero,relleno,pos)
+            graphics.draw_wave(color,numero,relleno,pos, window)
         case "C":
-            graphics.draw_circle(color,numero,relleno,pos)
+            graphics.draw_circle(color,numero,relleno,pos, window)
         case "D":
-            graphics.draw_diamond(color,numero,relleno,pos)   
+            graphics.draw_diamond(color,numero,relleno,pos, window)   
 
 def check_position(event_pos, window, text_output_window, cartas):
     #Comprueba la posicion en la que se ha clicado
@@ -232,7 +232,7 @@ def tablero(window):
     check_table()
     i = 0
     for c in list_tablero:
-        deal_cards(c,cartas[i])
+        deal_cards(c,cartas[i],window)
         i = i+1
     return (cartas)
 
