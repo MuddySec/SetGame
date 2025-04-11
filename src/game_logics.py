@@ -1,25 +1,25 @@
-# %% [markdown]
+from itertools import combinations
+import random
+import pygame
+import config
+import graphics
+
 # # Logica tablero y cartas
 
-# %%
 def generar_list_cartas():
     global list_cartas 
     list_cartas = []
     #Rellenamos list_cartas con todas las cartas posibles con esas caracteristicas
-    for i in range (0, len(Numero)):
-        for j in range (0, len(Forma)):
-            for k in range (0, len(Color)):
-                for l in range (0, len(Relleno)):
-                    list_cartas.append(str(Numero[i])+ str(Forma[j])+str(Color[k])+str(Relleno[l]))
+    for i in range (0, len(config.Numero)):
+        for j in range (0, len(config.Forma)):
+            for k in range (0, len(config.Color)):
+                for l in range (0, len(config.Relleno)):
+                    list_cartas.append(str(config.Numero[i])+ str(config.Forma[j])+str(config.Color[k])+str(config.Relleno[l]))
 
-
-
-# %%
 #Comprobar caracteristicas de tres cartas.
 #Comprueba si las 3 cartas seleccionadas son set o no.
 #Recordemos que un set es un conjunto de 3 cartas donde cada una
 #de las 4 características (Numero,Forma,Color y Relleno) son iguales en las 3, o son distintas en las 3.
-
 #En el momento en el que dos cartas tienen una característica igual, pero la tercera carta no, se devuelve False. 
 def check(a,b,c):
     #Cada carta tiene 4 caracteristicas = 4 Caracteres, por eso el rango va de 0 a 4
@@ -35,16 +35,13 @@ def check(a,b,c):
                 return False
     return True
 
-# %%
 #Genera un tablero de 12 cartas aleatorias de las 81 posibles. No hay repeticiones
 def generar_tablero():
     global list_tablero
     list_tablero = []
-    list_tablero = random.sample(list_cartas, N_cartas)
+    list_tablero = random.sample(list_cartas, config.N_cartas)
 
-
-# %%
-def change_tablero(new):
+def change_tablero(new, window):
     global list_tablero
     global selected 
     #selected debe ser [] al terminar
@@ -54,9 +51,8 @@ def change_tablero(new):
     list_tablero[selected[1]] = new[1]
     list_tablero[selected[2]] = new[2]
 
-
     selected = []
-    cartas = draw_table(800,800)
+    cartas = draw_table(800,800, window)
     generar_combinaciones()
     check_table()
     i = 0
@@ -65,11 +61,7 @@ def change_tablero(new):
         i = i + 1
     return (cartas)
 
-
-
-
-# %%
-def change_three(old, new):
+def change_three(old, new, window):
     p = True
     if (new[0] == 'NULL'): p=False
     global list_tablero
@@ -86,10 +78,8 @@ def change_three(old, new):
         list_tablero[old[1]] = new[1]
         list_tablero[old[2]] = new[2]
 
-
-
     selected = []
-    cartas = draw_table(800,800)
+    cartas = draw_table(800,800, window)
     generar_combinaciones()
     check_table()
     i = 0
@@ -98,15 +88,12 @@ def change_three(old, new):
         i = i + 1
     return (cartas)
 
-
-# %%
 def eliminar_seleccionadas(eliminar):
     #Elimina las cartas pasadas como parametro de la list_cartas
     global list_cartas
     for carta in eliminar:
         list_cartas.remove(carta)
 
-# %%
 def generar_combinaciones():
     #Genera todas las combinaciones posibles de 3 cartes con las 12 cartas presentes en el tablero.
     global combinaciones
@@ -117,7 +104,6 @@ def generar_combinaciones():
             list_tablero_copy.remove(c)
     combinaciones = list(combinations(list_tablero_copy, 3))
 
-# %%
 def check_table():
     #Comprueba las combinaciones de cartas existentes en la variable combinaciones. 
     #Este variable contiene todas las combinaciones de 3 cartas posibles con las 12 cartas del tablero
@@ -133,7 +119,6 @@ def check_table():
     print (sets)
     print (len(list_cartas))
 
-# %%
 def select_three_list_cartas():
     #Comprueba si la list_cartas tiene alguna carta
     #Si tiene, las devuelve
@@ -144,15 +129,12 @@ def select_three_list_cartas():
     else :
         return "NULL"
 
-# %%
 def select_three_list_tablero():
     #Devuelve 3 cartas aleatorias de la lista del tablero
     back_three = []
     back_three = random.sample(list_tablero, 3)
     return back_three
 
-
-# %%
 def change_lista_cartas(old,new):
     #Recibe 6 cartas. 
     #Las 3 cartas old (que estaban en el tablero) se añaden de nuevo en la lista de cartas
@@ -165,7 +147,6 @@ def change_lista_cartas(old,new):
     for carta_old in old:
         list_cartas.append(carta_old)
 
-# %%
 def deal_cards(c,pos):
     #Si la carta es 'NULL', hace un return
     #Si no, llama a las funciones de dibujar formas con los valores de la carta pasada
@@ -178,28 +159,19 @@ def deal_cards(c,pos):
     relleno = c[3]
 
     match color:
-        case "R": color = R
-        case "G": color = G
-        case "P": color = P
+        case "R": color = config.R
+        case "G": color = config.G
+        case "P": color = config.P
 
     match forma:
         case "W":
-            draw_wave(color,numero,relleno,pos)
+            graphics.draw_wave(color,numero,relleno,pos)
         case "C":
-            draw_circle(color,numero,relleno,pos)
+            graphics.draw_circle(color,numero,relleno,pos)
         case "D":
-            draw_diamond(color,numero,relleno,pos)   
+            graphics.draw_diamond(color,numero,relleno,pos)   
 
-# %%
-def draw_void(pos):
-    #NO FUNCIONA
-
-    #DEBERIA DIBUJAR UN CUADRADO DEL COLOR DEL FONDO PARA TAPAR LA CARTA VACIA
-    card = pygame.Rect (pos, pos, card_width, card_height)
-    card = pygame.draw.rect (window, GREY, card, border_radius=5)
-
-# %%
-def check_position(event_pos):
+def check_position(event_pos, window, text_output_window, cartas):
     #Comprueba la posicion en la que se ha clicado
     i = 0
     for c in cartas:
@@ -222,8 +194,7 @@ def check_position(event_pos):
             return selected
         i = i+1
 
-# %%
-def mark_selection(c,color,is_hint):
+def mark_selection(c,color,is_hint, window):
     new_c = c
     if is_hint : 
         print ("marca")
@@ -231,15 +202,12 @@ def mark_selection(c,color,is_hint):
     mark = pygame.draw.rect(window, color, new_c, 9, border_radius=5)
     return mark
 
-# %%
 def mark_hint(carta,hint):
     if hint:
             return mark_selection (carta,(153,204,255),True)
     else : 
-            return mark_selection (carta,GREY,True)
+            return mark_selection (carta,config.GREY,True)
 
-
-# %%
 def show_hint():
     if not sets:
         return "NULL"
@@ -254,15 +222,11 @@ def show_hint():
     card_hint = max (card_freq, key=card_freq.get)
     return card_hint
 
-
-
-# %%
-def tablero():
-
+def tablero(window):
     #CARTAS
     global selected
     selected = []
-    cartas = draw_table(800,800)
+    cartas = draw_table(800,800,window)
     generar_tablero()
     generar_combinaciones()
     check_table()
@@ -272,20 +236,16 @@ def tablero():
         i = i+1
     return (cartas)
 
-# %% [markdown]
 # # Textos y botones
-
-# %%
-def draw_button(button,texto):
-    pygame.draw.rect(window, WHITE, button, border_radius=4)
+def draw_button(button,texto, window):
+    pygame.draw.rect(window, config.WHITE, button, border_radius=4)
     font = pygame.font.Font(None, 36)
     text = font.render(texto, True, (0, 0, 0))
     text_rect = text.get_rect( center = button.center)
     window.blit(text, text_rect) 
 
-# %%
-def draw_button_hint(button,hint):
-    pygame.draw.rect(window, WHITE, button, border_radius=4)
+def draw_button_hint(button,hint, window):
+    pygame.draw.rect(window, config.WHITE, button, border_radius=4)
     font = pygame.font.Font(None, 36)
     if hint:
         color = (0,0,0)
@@ -297,9 +257,8 @@ def draw_button_hint(button,hint):
     text_rect = text.get_rect( center = button.center)
     window.blit(text, text_rect)
 
-# %%
-def draw_output_text(surface,text,color):
-    surface.fill(WHITE)  # Fondo blanco para la ventana
+def draw_output_text(surface,text,color, window):
+    surface.fill(config.WHITE)  # Fondo blanco para la ventana
     window.blit(surface, (420, 830))  # Mostrar la superficie del output en la parte inferior
 
     # Renderizar el texto y ponerlo en la superficie
@@ -314,13 +273,12 @@ def draw_output_text(surface,text,color):
     text_rect = text_surface.get_rect(topleft=(center_x+420, center_y+830))
     window.blit(text_surface, text_rect)  # Posición del texto
 
-# %%
-def write_points(surface):
-    surface.fill(WHITE)  # Fondo blanco para la ventana
+def write_points(surface, window):
+    surface.fill(config.WHITE)  # Fondo blanco para la ventana
     window.blit(surface, (420, 910))  # Mostrar la superficie del output en la parte inferior
 
     font = pygame.font.Font(None, 32)
-    text = "Points: " + str(points) 
+    text = "Points: " + str(config.points) 
     text_surface = font.render(text, True, (0,0,0))
 
     text_width, text_height = text_surface.get_size()
@@ -331,30 +289,25 @@ def write_points(surface):
     text_rect = text_surface.get_rect(topleft=(center_x+420, center_y+910))
     window.blit(text_surface, text_rect)  # Posición del texto
 
-# %% [markdown]
 # # GRAFICOS
-
-# %% [markdown]
 # ## Cartas y Tablero
-
-# %%
-def draw_card (x,y):
-    card = pygame.Rect (x, y, card_width, card_height)
-    card = pygame.draw.rect (window, WHITE, card, border_radius=5)
+def draw_card (x,y, window):
+    card = pygame.Rect (x, y, config.card_width, config.card_height)
+    card = pygame.draw.rect (window, config.WHITE, card, border_radius=5)
     return card
 
-def draw_table(width,height):
+def draw_table(width,height, window):
     cartas = []
     # Calcula la separación horizontal y vertical
-    margen_x = (width - N_columnas * card_width) // (N_columnas + 1)
-    margen_y = (height - N_filas * card_height) // (N_filas + 1)
+    margen_x = (width - config.N_columnas * config.card_width) // (config.N_columnas + 1)
+    margen_y = (height - config.N_filas * config.card_height) // (config.N_filas + 1)
 
     # Dibuja las cartas
     for i in range(0,3):
         for j in range(0,4):
-            x = margen_x * (j + 1) + j * card_width
-            y = margen_y * (i + 1) + i * card_height
-            cartas.append (draw_card(x,y))
+            x = margen_x * (j + 1) + j * config.card_width
+            y = margen_y * (i + 1) + i * config.card_height
+            cartas.append (draw_card(x,y, window))
     return cartas
 
 
