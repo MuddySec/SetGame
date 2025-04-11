@@ -19,7 +19,7 @@ cartas = []
 selected = []
 
 #global window
-window = pygame.display.set_mode((config.width, config.height))
+window = pygame.display.set_mode((config.WIDTH, config.HEIGHT))
 
 pygame.display.set_caption("Set Game")
 
@@ -80,14 +80,14 @@ while running:
             if button_check.collidepoint(event.pos):
                 window.blit(text_output_window,(420,830))
                 if (len(selected)==3) :
-                    if (game_logics.check(config.list_tablero[selected[0]],
-                              config.list_tablero[selected[1]],
-                              config.list_tablero[selected[2]])): 
+                    if (game_logics.check(game_logics.list_tablero[selected[0]],
+                              game_logics.list_tablero[selected[1]],
+                              game_logics.list_tablero[selected[2]])): 
                         game_logics.draw_output_text(text_output_window,"SET CORRECTO!",config.G, window)
                         config.points = config.points + 1
                         game_logics.write_points(text_points_window, window)
                         if hint :
-                            mark = game_logics.mark_hint(cartas[config.list_tablero.index(h)],False,window)
+                            mark = game_logics.mark_hint(cartas[game_logics.list_tablero.index(h)],False,window)
                             hint = False
                             game_logics.draw_button_hint(button_hint,hint, window)
                         new = game_logics.select_three_list_cartas() 
@@ -104,7 +104,7 @@ while running:
             #### NEW GAME ####
             if button_newgame.collidepoint(event.pos):
                 if hint :
-                    mark = game_logics.mark_hint(cartas[config.list_tablero.index(h)],False,window)
+                    mark = game_logics.mark_hint(cartas[game_logics.list_tablero.index(h)],False,window)
                     hint = False
                     game_logics.draw_button_hint(button_hint,hint, window)
 
@@ -112,7 +112,7 @@ while running:
                 window.blit(text_output_window,(420,830))
                 game_logics.generar_list_cartas()
                 cartas = game_logics.tablero(window)
-                game_logics.eliminar_seleccionadas(config.list_tablero)
+                game_logics.eliminar_seleccionadas(game_logics.list_tablero)
                 config.points = 0
                 game_logics.write_points(text_points_window, window)
                 game_logics.draw_output_text(text_output_window,"PARTIDA NUEVA",(0,0,0), window)
@@ -122,7 +122,7 @@ while running:
                 
                 h = game_logics.show_hint()
                 if hint :
-                    mark = game_logics.mark_hint(cartas[config.list_tablero.index(h)],False, window)
+                    mark = game_logics.mark_hint(cartas[game_logics.list_tablero.index(h)],False, window)
                     hint = False
                     game_logics.draw_button_hint(button_hint,hint, window)
 
@@ -154,7 +154,7 @@ while running:
                     if (h == "NULL"):
                         game_logics.draw_output_text(text_output_window,"NO HAY NINGUN SET!",config.R, window)
                     else : 
-                        mark = game_logics.mark_hint(cartas[config.list_tablero.index(h)],True, window)
+                        mark = game_logics.mark_hint(cartas[game_logics.list_tablero.index(h)],True, window)
                        
                 else: game_logics.mark_selection(mark,config.GREY,False, window)
 

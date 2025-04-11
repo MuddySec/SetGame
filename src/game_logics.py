@@ -10,11 +10,11 @@ def generar_list_cartas():
     global list_cartas 
     list_cartas = []
     #Rellenamos list_cartas con todas las cartas posibles con esas caracteristicas
-    for i in range (0, len(config.Numero)):
-        for j in range (0, len(config.Forma)):
-            for k in range (0, len(config.Color)):
-                for l in range (0, len(config.Relleno)):
-                    list_cartas.append(str(config.Numero[i])+ str(config.Forma[j])+str(config.Color[k])+str(config.Relleno[l]))
+    for i in range (0, len(config.NUMERO)):
+        for j in range (0, len(config.FORMA)):
+            for k in range (0, len(config.COLOR)):
+                for l in range (0, len(config.RELLENO)):
+                    list_cartas.append(str(config.NUMERO[i])+ str(config.FORMA[j])+str(config.COLOR[k])+str(config.RELLENO[l]))
 
 #Comprobar caracteristicas de tres cartas.
 #Comprueba si las 3 cartas seleccionadas son set o no.
@@ -39,7 +39,7 @@ def check(a,b,c):
 def generar_tablero():
     global list_tablero
     list_tablero = []
-    list_tablero = random.sample(list_cartas, config.N_cartas)
+    list_tablero = random.sample(list_cartas, config.N_CARTAS)
 
 def change_tablero(new, window):
     global list_tablero
@@ -292,21 +292,21 @@ def write_points(surface, window):
 # # GRAFICOS
 # ## Cartas y Tablero
 def draw_card (x,y, window):
-    card = pygame.Rect (x, y, config.card_width, config.card_height)
+    card = pygame.Rect (x, y, config.CARD_WIDTH, config.CARD_HEIGHT)
     card = pygame.draw.rect (window, config.WHITE, card, border_radius=5)
     return card
 
 def draw_table(width,height, window):
     cartas = []
     # Calcula la separación horizontal y vertical
-    margen_x = (width - config.N_columnas * config.card_width) // (config.N_columnas + 1)
-    margen_y = (height - config.N_filas * config.card_height) // (config.N_filas + 1)
+    margen_x = (width - config.N_COLUMNAS * config.CARD_WIDTH) // (config.N_COLUMNAS + 1)
+    margen_y = (height - config.N_FILAS * config.CARD_HEIGHT) // (config.N_FILAS + 1)
 
     # Dibuja las cartas
     for i in range(0,3):
         for j in range(0,4):
-            x = margen_x * (j + 1) + j * config.card_width
-            y = margen_y * (i + 1) + i * config.card_height
+            x = margen_x * (j + 1) + j * config.CARD_WIDTH
+            y = margen_y * (i + 1) + i * config.CARD_HEIGHT
             cartas.append (draw_card(x,y, window))
     return cartas
 

@@ -1,4 +1,3 @@
-
 import pygame
 import math
 import config
@@ -36,7 +35,7 @@ def draw_lines_circle(color, circulos, radio, window):
     # Esta version no dibuja sobre la ventana. Dibuja las lineas de un circulo
     # sobre una superficie auxiliar y luego dibuja esta en la ventana --> mas eficiente
 
-    surface_lines = pygame.Surface((config.width, config.height),pygame.SRCALPHA)
+    surface_lines = pygame.Surface((config.WIDTH, config.HEIGHT),pygame.SRCALPHA)
 
     for c in circulos:
         borde_izq = c.left + radio
@@ -71,7 +70,7 @@ def draw_wave_2(movement,wave_rect,relleno,color, window):
     r = wave_rect.right
     l = wave_rect.left
 
-    surface_lines = pygame.Surface((config.width, config.height), pygame.SRCALPHA)
+    surface_lines = pygame.Surface((config.WIDTH, config.HEIGHT), pygame.SRCALPHA)
 
     #Calcula y dibuja puntos superiores
     points1 = [(x, int(desfase + dif + amplitud * math.sin(frecuencia * (x-l)))) for x in range(l, r)]
