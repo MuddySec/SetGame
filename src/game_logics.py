@@ -41,9 +41,8 @@ def generar_tablero():
     list_tablero = []
     list_tablero = random.sample(list_cartas, config.N_CARTAS)
 
-def change_tablero(new, window):
+def change_tablero(new, selected, window):
     global list_tablero
-    global selected 
     #selected debe ser [] al terminar
     #list_tablero debe ser list_tablero, quitando las seleccionadas y añadiendo las 3 nuevas
 
@@ -59,13 +58,12 @@ def change_tablero(new, window):
     for c in list_tablero:
         deal_cards(c,cartas[i],window)
         i = i + 1
-    return (cartas,sets)
+    return (cartas,sets,selected)
 
-def change_three(old, new, window):
+def change_three(old, new, selected, window):
     p = True
     if (new[0] == 'NULL'): p=False
     global list_tablero
-    global selected
     selected = []
     if p:
         for carta in old:
@@ -86,7 +84,7 @@ def change_three(old, new, window):
     for c in list_tablero:
         deal_cards(c,cartas[i],window)
         i = i + 1
-    return (cartas, sets)
+    return (cartas, sets, selected)
 
 def eliminar_seleccionadas(eliminar):
     #Elimina las cartas pasadas como parametro de la list_cartas
@@ -115,7 +113,6 @@ def check_table(combinaciones):
             sets.append(combinaciones[i])
     #Prints para debugging
     print (sets)
-    print (len(list_cartas))
     return sets
 
 
@@ -170,7 +167,7 @@ def deal_cards(c,pos,window):
         case "D":
             graphics.draw_diamond(color,numero,relleno,pos, window)   
 
-def check_position(event_pos, window, text_output_window, cartas):
+def check_position(event_pos, window, text_output_window, cartas, selected):
     #Comprueba la posicion en la que se ha clicado
     i = 0
     for c in cartas:
@@ -192,11 +189,11 @@ def check_position(event_pos, window, text_output_window, cartas):
             #Devuelve selected (con las posiciones de 0 a 11 de las cartas seleccionadas)
             return selected
         i = i+1
+    return selected
 
 def mark_selection(c,color,is_hint, window):
     new_c = c
     if is_hint : 
-        print ("marca")
         new_c= c.inflate(25,25)
     mark = pygame.draw.rect(window, color, new_c, 9, border_radius=5)
     return mark
@@ -223,7 +220,6 @@ def show_hint(sets):
 
 def tablero(window):
     #CARTAS
-    global selected
     selected = []
     cartas = draw_table(800,800,window)
     generar_tablero()
@@ -233,7 +229,7 @@ def tablero(window):
     for c in list_tablero:
         deal_cards(c,cartas[i],window)
         i = i+1
-    return (cartas,sets)
+    return (cartas,sets, selected)
 
 # # Textos y botones
 def draw_button(button,texto, window):

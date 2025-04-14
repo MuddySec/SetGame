@@ -52,7 +52,6 @@ points = 0
 #numero posicional de las cartas seleccionadas por el usuario. 
 #Entre 0 y 11. 
 #Máximo se permite seleccionar 3 cartas
-global selected
 selected = []
 
 # Total de cartas:

@@ -60,6 +60,7 @@ game_logics.generar_list_cartas()
 ret = game_logics.tablero(window)
 cartas = ret[0]
 sets = ret[1]
+selected = ret [2]
 
 game_logics.eliminar_seleccionadas(game_logics.list_tablero)
 
@@ -90,13 +91,17 @@ while running:
                             game_logics.draw_button_hint(button_hint,hint, window)
                         new = game_logics.select_three_list_cartas() 
                         if (new == "NULL"):
-                            cartas = game_logics.change_three(selected,('NULL','NULL','NULL'), window)
+                            ret = game_logics.change_three(selected,('NULL','NULL','NULL'), window)
+                            cartas = ret[0]
+                            sets = ret[1]
+                            selected = ret[2]
                             game_logics.draw_output_text(text_output_window,"NO QUEDAN CARTAS!",config.R, window)
                         else:
                             game_logics.eliminar_seleccionadas(new)
-                            ret = game_logics.change_tablero(new, window)
+                            ret = game_logics.change_tablero(new, selected, window)
                             cartas = ret[0]
                             sets = ret[1]
+                            selected = ret[2]
                         
                     else : game_logics.draw_output_text(text_output_window,"ESO NO ES UN SET!",config.R, window)
                 else : game_logics.draw_output_text(text_output_window,"LOS SETS SON DE 3 CARTAS!",config.R, window)
@@ -114,6 +119,7 @@ while running:
                 ret = game_logics.tablero(window)
                 cartas = ret[0]
                 sets = ret[1]
+                selected = ret [2]
                 game_logics.eliminar_seleccionadas(game_logics.list_tablero)
                 config.points = 0
                 game_logics.write_points(text_points_window, window)
@@ -145,6 +151,7 @@ while running:
                     ret = game_logics.change_three(old_three,new_three, window)
                     cartas = ret[0]
                     sets = ret[1]
+                    selected = ret[2]
                     game_logics.change_lista_cartas(old_three,new_three)
                
 
@@ -166,7 +173,7 @@ while running:
             mouse_buttons = pygame.mouse.get_pressed()  # Obtener estado de los botones
             # Comprobar qué botón fue presionado
             if mouse_buttons[0]:
-                game_logics.check_position(event.pos, window, text_output_window, cartas)
+                selected = game_logics.check_position(event.pos, window, text_output_window, cartas, selected)
 
     pygame.display.flip()
 pygame.quit()
