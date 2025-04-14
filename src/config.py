@@ -45,7 +45,6 @@ CARD_WIDTH : Final = 120
 CARD_HEIGHT : Final = 184  #120*1.5454
 
 # Puntos acumulados en una partida
-global points
 points = 0
 
 

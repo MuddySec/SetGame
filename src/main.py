@@ -1,12 +1,7 @@
 
 # %%
 #Imports necesarios para el programa
-from itertools import combinations
-import random
-import math
 import pygame
-import sys
-import tkinter as tk
 import game_logics
 import config
 
@@ -62,7 +57,10 @@ text_points_window.fill((255,255,255))
 window.blit(text_points_window,(420,910))
 
 game_logics.generar_list_cartas()
-cartas = game_logics.tablero(window)
+ret = game_logics.tablero(window)
+cartas = ret[0]
+sets = ret[1]
+
 game_logics.eliminar_seleccionadas(game_logics.list_tablero)
 
 game_logics.write_points (text_points_window, window)
@@ -96,7 +94,9 @@ while running:
                             game_logics.draw_output_text(text_output_window,"NO QUEDAN CARTAS!",config.R, window)
                         else:
                             game_logics.eliminar_seleccionadas(new)
-                            cartas = game_logics.change_tablero(new, window)
+                            ret = game_logics.change_tablero(new, window)
+                            cartas = ret[0]
+                            sets = ret[1]
                         
                     else : game_logics.draw_output_text(text_output_window,"ESO NO ES UN SET!",config.R, window)
                 else : game_logics.draw_output_text(text_output_window,"LOS SETS SON DE 3 CARTAS!",config.R, window)
@@ -111,7 +111,9 @@ while running:
                 window.blit(tablero_surface,(0,0))
                 window.blit(text_output_window,(420,830))
                 game_logics.generar_list_cartas()
-                cartas = game_logics.tablero(window)
+                ret = game_logics.tablero(window)
+                cartas = ret[0]
+                sets = ret[1]
                 game_logics.eliminar_seleccionadas(game_logics.list_tablero)
                 config.points = 0
                 game_logics.write_points(text_points_window, window)
@@ -120,7 +122,7 @@ while running:
             #### CHANGE THREE ####
             if button_change_three.collidepoint(event.pos):
                 
-                h = game_logics.show_hint()
+                h = game_logics.show_hint(sets)
                 if hint :
                     mark = game_logics.mark_hint(cartas[game_logics.list_tablero.index(h)],False, window)
                     hint = False
@@ -140,7 +142,9 @@ while running:
                     game_logics.draw_output_text(text_output_window,"NO QUEDAN CARTAS!",config.R, window)
                 else:
                      #Saca de list_cartas las 3 nuevas cartas. Vuelve a meter las cartas que estaban en el tablero
-                    cartas = game_logics.change_three(old_three,new_three, window)
+                    ret = game_logics.change_three(old_three,new_three, window)
+                    cartas = ret[0]
+                    sets = ret[1]
                     game_logics.change_lista_cartas(old_three,new_three)
                
 
@@ -150,7 +154,7 @@ while running:
                 hint = not hint
                 game_logics.draw_button_hint(button_hint,hint, window)
                 if hint : 
-                    h = game_logics.show_hint()
+                    h = game_logics.show_hint(sets)
                     if (h == "NULL"):
                         game_logics.draw_output_text(text_output_window,"NO HAY NINGUN SET!",config.R, window)
                     else : 

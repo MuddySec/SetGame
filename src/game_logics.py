@@ -53,13 +53,13 @@ def change_tablero(new, window):
 
     selected = []
     cartas = draw_table(800,800, window)
-    generar_combinaciones()
-    check_table()
+    combinaciones = generar_combinaciones()
+    sets = check_table(combinaciones)
     i = 0
     for c in list_tablero:
         deal_cards(c,cartas[i],window)
         i = i + 1
-    return (cartas)
+    return (cartas,sets)
 
 def change_three(old, new, window):
     p = True
@@ -80,13 +80,13 @@ def change_three(old, new, window):
 
     selected = []
     cartas = draw_table(800,800, window)
-    generar_combinaciones()
-    check_table()
+    combinaciones = generar_combinaciones()
+    sets = check_table(combinaciones)
     i = 0
     for c in list_tablero:
         deal_cards(c,cartas[i],window)
         i = i + 1
-    return (cartas)
+    return (cartas, sets)
 
 def eliminar_seleccionadas(eliminar):
     #Elimina las cartas pasadas como parametro de la list_cartas
@@ -96,28 +96,28 @@ def eliminar_seleccionadas(eliminar):
 
 def generar_combinaciones():
     #Genera todas las combinaciones posibles de 3 cartes con las 12 cartas presentes en el tablero.
-    global combinaciones
     list_tablero_copy = list_tablero.copy()
-    combinaciones = []
+
     for c in list_tablero:
         if (c == "NULL") : 
             list_tablero_copy.remove(c)
     combinaciones = list(combinations(list_tablero_copy, 3))
+    return combinaciones
 
-def check_table():
+def check_table(combinaciones):
     #Comprueba las combinaciones de cartas existentes en la variable combinaciones. 
     #Este variable contiene todas las combinaciones de 3 cartas posibles con las 12 cartas del tablero
 
     #Almacena en sets las combinaciones validas como set
-    global sets
     sets = []
     for i in range (0, len(combinaciones)):
         if check(combinaciones[i][0], combinaciones[i][1],combinaciones[i][2]):
             sets.append(combinaciones[i])
-
     #Prints para debugging
     print (sets)
     print (len(list_cartas))
+    return sets
+
 
 def select_three_list_cartas():
     #Comprueba si la list_cartas tiene alguna carta
@@ -131,7 +131,6 @@ def select_three_list_cartas():
 
 def select_three_list_tablero():
     #Devuelve 3 cartas aleatorias de la lista del tablero
-    back_three = []
     back_three = random.sample(list_tablero, 3)
     return back_three
 
@@ -208,7 +207,7 @@ def mark_hint(carta,hint,window):
     else : 
             return mark_selection (carta,config.GREY,True, window)
 
-def show_hint():
+def show_hint(sets):
     if not sets:
         return "NULL"
 
@@ -228,13 +227,13 @@ def tablero(window):
     selected = []
     cartas = draw_table(800,800,window)
     generar_tablero()
-    generar_combinaciones()
-    check_table()
+    combinaciones = generar_combinaciones()
+    sets = check_table(combinaciones)
     i = 0
     for c in list_tablero:
         deal_cards(c,cartas[i],window)
         i = i+1
-    return (cartas)
+    return (cartas,sets)
 
 # # Textos y botones
 def draw_button(button,texto, window):
