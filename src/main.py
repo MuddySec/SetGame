@@ -41,7 +41,7 @@ def load_end():
     gameover_surface.fill((120,120,120))
     window.blit(gameover_surface, (0, 0))
     gameover_surface = pygame.Surface((400, 400))
-    gameover_surface.fill((255,255,255))
+    gameover_surface.fill((200,200,200))
     window.blit(gameover_surface, (x+50, y+50))
     font = pygame.font.Font(None, 50)
     text_surface = font.render("GAME OVER", True, config.G)
@@ -57,10 +57,9 @@ def load_end():
     text_surface = font.render("Tiempo total: "+str(fake_time)+"s", True, config.G)
     text_rect = text_surface.get_rect(center=(x+50+200, y+250))
     window.blit(text_surface, text_rect.topleft)
-    button_gameover = pygame.Rect(x+50, y+350, 400, 60)
+    button_gameover = pygame.Rect(x+150, y+350, 200, 60)
     game_logics.draw_button(button_gameover,"Volver a jugar", window)
-
-    ended = True
+    return button_gameover
 
 
 
@@ -126,25 +125,14 @@ window.blit(text_points_window,(420,910))
 ended = False
 running = True
 
-modo_debug = True
 
-if modo_debug:
-    estado = cargar_estado()
-    cartas = estado["cartas"]
-    list_tablero = estado["list_tablero"]
-    list_cartas = estado["list_cartas"]
-    selected = estado["selected"]
-    sets = estado["sets"]
-    config.points = estado["points"]
-    game_logics.tablero(list_tablero, window)
-else:
-    list_cartas = game_logics.generar_list_cartas()
-    ret = game_logics.tablero(list_cartas, window)
-    cartas = ret[0]
-    sets = ret[1]
-    selected = ret [2]
-    list_tablero = ret[3]
-    list_cartas = game_logics.eliminar_seleccionadas(list_tablero, list_cartas)
+list_cartas = game_logics.generar_list_cartas()
+ret = game_logics.tablero(list_cartas, window)
+cartas = ret[0]
+sets = ret[1]
+selected = ret [2]
+list_tablero = ret[3]
+list_cartas = game_logics.eliminar_seleccionadas(list_tablero, list_cartas)
 
 game_logics.write_points (text_points_window, window)
 
@@ -264,27 +252,35 @@ while running:
                 # Comprobar qué botón fue presionado
                 if mouse_buttons[0]:
                     selected = game_logics.check_position(event.pos, window, text_output_window, cartas, selected)
-                if mouse_buttons[2]:
-                    print("Cartas: ",cartas)
-                    print("List_tablero: ",list_tablero)
-                    print("List_cartas: ",list_cartas)
-                    print("Selected: ",selected)
-                    print("Sets: ",sets)
-                    print("Points: ",config.points)
-                    guardar_estado(cartas, list_tablero, list_cartas, selected, sets, config.points)
-                    #load_end()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    button_gameover = load_end()
                     #button_gameover = pygame.Rect(x+50, y+350, 400, 60)
                     #game_logics.draw_button(button_gameover,"Volver a jugar", window)
+                    ended = True       
+                if event.key == pygame.K_s: #Save estado
+                    guardar_estado(cartas, list_tablero, list_cartas, selected, sets, config.points)
+
+                if event.key == pygame.K_l: #Load estado
+                    estado = cargar_estado()
+                    cartas = estado["cartas"]
+                    list_tablero = estado["list_tablero"]
+                    list_cartas = estado["list_cartas"]
+                    selected = estado["selected"]
+                    sets = estado["sets"]
+                    config.points = estado["points"]
+                    game_logics.write_points(text_points_window, window)
+                    game_logics.tablero(list_tablero, window)
+                    game_logics.draw_output_text(text_output_window,"ESTADO CARGADO",(0,0,0), window)
         else:
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:  # Se activa cuando se presiona un botón del ratón
                 mouse_buttons = pygame.mouse.get_pressed()  # Obtener estado de los botones
-                print ("1")
                 if mouse_buttons[0]:
-                    print ("2")
-                    #if button_gameover.collidepoint(event.pos):
-                    #   restart_program()
+                    if button_gameover.collidepoint(event.pos):
+                        restart_program()
     pygame.display.flip()
 pygame.quit()
 
