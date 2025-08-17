@@ -182,6 +182,7 @@ def check_position(event_pos, window, text_output_window, cartas, selected):
                 if (len(selected)<3) : 
                     #Si habia menos de 3, la selecciona
                     selected.append(i)
+                    print (c)
                     mark_selection(c,(255,255,100),False,window)
                 #Si hay 3 seleccionada, no selecciona la clicada e informa de que maximo se pueden seleccionar 3
                 else : draw_output_text(text_output_window,"SOLO PUEDES SELECCIONAR 3!",config.R, window)
@@ -217,7 +218,14 @@ def show_hint(sets):
     card_hint = max (card_freq, key=card_freq.get)
     return card_hint
 
-def tablero(list_cartas, window):
+def draw_tablero(list_tablero,cartas, window):
+    #Dibuja el tablero de cartas
+    i = 0
+    for c in list_tablero:
+        deal_cards(c,cartas[i],window)
+        i = i + 1
+
+def init_tablero(list_cartas, window):
     #CARTAS
     selected = []
     cartas = draw_table(800,800,window)

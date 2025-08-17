@@ -9,11 +9,11 @@
 ## generar_tablero ()
 > Añade a la variable global list_tablero 12 cartas aleatorias de list_cartas (combinación de cartas existentes)
 
-## change_tablero(cartas: list, window: pygame.Surface) -> list
-> Cambia las cartas mostradas en el tablero según una lista nueva. Devuelve el nuevo tablero y los sets existentes
+## change_tablero(cartas: list, selected: list, window: pygame.Surface) -> list
+> Cambia las cartas mostradas en el tablero según una lista nueva. Devuelve el nuevo tablero, sets existentes y las cartas seleccionadas(ninguna).
 
-## change_three(old: list, new: list, windwo: pygame.Surface) -> list
-> Sustituye tres cartas del tablero por tres nuevas y devuelve el nuevo tablero y los sets existentes.
+## change_three(old: list, new: list, selected: list window: pygame.Surface) -> list
+> Sustituye tres cartas del tablero por tres nuevas y devuelve el nuevo tablero, los sets existentes y las cartas seleccionadas.
 
 ## eliminar_seleccionadas(cartas: list)
 > Elimina del tablero las cartas seleccionadas (útil tras hacer un set).
@@ -37,7 +37,7 @@
  ## deal_cards (card: str, posicion: Rect, window: pygame.Surface)
 > Si la carta es NULL, no devuelve nada. Si no, llama a la funcion de dibujo de carta correspondiente.
 
-## check_position(pos: tuple, window: pygame.Surface, text_output_window: pygame.Surface, cartas: list) -> list
+## check_position(pos: tuple, window: pygame.Surface, text_output_window: pygame.Surface, cartas: list, selected: list) -> list
 > Verifica si se ha hecho clic en alguna carta y gestiona la selección.
 
 ## mark_selection(marca: tuple, color: tuple, is_hint: bool, window: pygame.Surface) -> Rect

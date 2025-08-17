@@ -4,32 +4,13 @@
 import pygame
 import sys
 import os
+
 import subprocess
 import pickle
+
 import game_logics
 import config
-
-
-def guardar_estado(cartas, list_tablero, list_cartas, selected, sets, points):
-    estado = {
-        "cartas": cartas,
-        "list_tablero": list_tablero,
-        "list_cartas": list_cartas,
-        "selected": selected,
-        "sets": sets,
-        "points": points
-    }
-
-    with open("estado_guardado.pkl", "wb") as f:
-        pickle.dump(estado, f)
-    print("✔ Estado guardado")
-
-def cargar_estado():
-    with open("estado_guardado.pkl", "rb") as f:
-        estado = pickle.load(f)
-    print("✔ Estado cargado")
-    return estado
-
+import game_state
 
 
 def load_end():
@@ -62,8 +43,6 @@ def load_end():
     return button_gameover
 
 
-
-
 def restart_program():
     print ("restart")
     python = sys.executable
@@ -71,12 +50,12 @@ def restart_program():
     print (script)
     subprocess.Popen([python, script], creationflags=subprocess.CREATE_NO_WINDOW)
     os._exit(0)                                 # Termina el proceso actual
+
+
 # Inicializa Pygame
 pygame.init()
 
 hint = False
-cartas = []
-selected = []
 
 #global window
 window = pygame.display.set_mode((config.WIDTH, config.HEIGHT))
@@ -127,7 +106,7 @@ running = True
 
 
 list_cartas = game_logics.generar_list_cartas()
-ret = game_logics.tablero(list_cartas, window)
+ret = game_logics.init_tablero(list_cartas, window)
 cartas = ret[0]
 sets = ret[1]
 selected = ret [2]
@@ -191,7 +170,7 @@ while running:
                     window.blit(tablero_surface,(0,0))
                     window.blit(text_output_window,(420,830))
                     list_cartas = game_logics.generar_list_cartas()
-                    ret = game_logics.tablero(list_cartas, window)
+                    ret = game_logics.init_tablero(list_cartas, window)
                     cartas = ret[0]
                     sets = ret[1]
                     selected = ret [2]
@@ -260,19 +239,37 @@ while running:
                     #game_logics.draw_button(button_gameover,"Volver a jugar", window)
                     ended = True       
                 if event.key == pygame.K_s: #Save estado
-                    guardar_estado(cartas, list_tablero, list_cartas, selected, sets, config.points)
+                    estado = game_state.GameState(list_cartas, list_tablero, selected, sets, config.points, hint, mark)
+                    estado.save()
+                    game_logics.draw_output_text(text_output_window,"ESTADO GUARDADO",(0,0,0), window)
 
                 if event.key == pygame.K_l: #Load estado
-                    estado = cargar_estado()
-                    cartas = estado["cartas"]
-                    list_tablero = estado["list_tablero"]
-                    list_cartas = estado["list_cartas"]
-                    selected = estado["selected"]
-                    sets = estado["sets"]
-                    config.points = estado["points"]
+                    estado = game_state.GameState.load()
+                    list_cartas = estado.list_cartas
+                    list_tablero = estado.list_tablero
+                    selected = estado.selected
+                    sets = estado.sets
+                    config.points = estado.points
+                    hint = estado.hint
+                    mark = estado.mark
+                    cartas = game_logics.draw_table(800,800, window)
+                    
                     game_logics.write_points(text_points_window, window)
-                    game_logics.tablero(list_tablero, window)
+                    game_logics.draw_tablero(list_tablero,cartas, window)
+                    for idx in selected:
+                        game_logics.mark_selection(cartas[idx],(255,255,100), False, window)
                     game_logics.draw_output_text(text_output_window,"ESTADO CARGADO",(0,0,0), window)
+                    if hint : 
+                        h = game_logics.show_hint(sets)
+                        if (h == "NULL"):
+                            game_logics.draw_output_text(text_output_window,"NO HAY NINGUN SET!",config.R, window)
+                        else : 
+                            mark = game_logics.mark_hint(cartas[list_tablero.index(h)],True, window)
+                        
+                    else:
+                        game_logics.mark_selection(mark,config.GREY,False, window)
+                    
+
         else:
             if event.type == pygame.QUIT:
                 running = False
