@@ -2,66 +2,36 @@
 # %%
 #Imports necesarios para el programa
 import pygame
+
+import pickle
 import sys
 import os
-
 import subprocess
-import pickle
 
 import game_logics
 import config
 import game_state
-
-
-def load_end():
-#gestion final
-    print("gameover")
-    x = config.WIDTH//2 - 250
-    y = config.HEIGHT//2 - 250
-    gameover_surface = pygame.Surface((config.WIDTH, config.HEIGHT))
-    gameover_surface.fill((120,120,120))
-    window.blit(gameover_surface, (0, 0))
-    gameover_surface = pygame.Surface((400, 400))
-    gameover_surface.fill((200,200,200))
-    window.blit(gameover_surface, (x+50, y+50))
-    font = pygame.font.Font(None, 50)
-    text_surface = font.render("GAME OVER", True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+100))
-    window.blit(text_surface, text_rect.topleft)
-
-    font = pygame.font.Font(None, 30)
-    text_surface = font.render("Puntos totales: "+str(config.points), True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+200))
-    window.blit(text_surface, text_rect.topleft)
-    font = pygame.font.Font(None, 30) 
-    fake_time = 30
-    text_surface = font.render("Tiempo total: "+str(fake_time)+"s", True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+250))
-    window.blit(text_surface, text_rect.topleft)
-    button_gameover = pygame.Rect(x+150, y+350, 200, 60)
-    game_logics.draw_button(button_gameover,"Volver a jugar", window)
-    return button_gameover
-
 
 def restart_program():
     print ("restart")
     python = sys.executable
     script = os.path.abspath(sys.argv[0])        # Ruta completa del script actual
     print (script)
-    subprocess.Popen([python, script], creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.Popen([python, script])
     os._exit(0)                                 # Termina el proceso actual
+
 
 
 # Inicializa Pygame
 pygame.init()
 
-hint = False
 
 #global window
 window = pygame.display.set_mode((config.WIDTH, config.HEIGHT))
 
 pygame.display.set_caption("Set Game")
-
+partida = game_logics.new_game()
+running = True
 #Ventana
 window.fill(config.GREY)
 
@@ -86,7 +56,7 @@ button_change_three = pygame.Rect(235,830,150,60)
 game_logics.draw_button(button_change_three,"Change 3", window)
 
 button_hint = pygame.Rect(65,910,150,60)
-game_logics.draw_button_hint(button_hint,hint, window)
+game_logics.draw_button_hint(button_hint,partida.hint, window)
 
 button_newgame = pygame.Rect(235,910,150,60)
 game_logics.draw_button(button_newgame,"New Game", window)
@@ -100,25 +70,25 @@ text_points_window = pygame.Surface((320,60))
 text_points_window.fill((255,255,255))
 window.blit(text_points_window,(420,910))
 
-
-ended = False
-running = True
-
-
-list_cartas = game_logics.generar_list_cartas()
-ret = game_logics.init_tablero(list_cartas, window)
-cartas = ret[0]
-sets = ret[1]
-selected = ret [2]
-list_tablero = ret[3]
-list_cartas = game_logics.eliminar_seleccionadas(list_tablero, list_cartas)
-
-game_logics.write_points (text_points_window, window)
-
+elapsed_time = (pygame.time.get_ticks() - partida.time) //  1000
+partida.minutes = elapsed_time // 60
+partida.seconds = elapsed_time % 60
+game_logics.write_points (text_points_window, window, partida.points, partida.minutes, partida.seconds)
+ret = game_logics.init_tablero(partida.list_cartas, window)
+partida.cartas = ret[0]
+partida.sets = ret[1]
+partida.selected = ret [2]
+partida.list_tablero = ret[3]
+partida.list_cartas = game_logics.eliminar_seleccionadas(partida.list_tablero, partida.list_cartas)
 
 while running:
+    if (not partida.ended):
+        elapsed_time = (pygame.time.get_ticks() - partida.time) //  1000
+        partida.minutes = elapsed_time // 60
+        partida.seconds = elapsed_time % 60
+        game_logics.write_points (text_points_window, window, partida.points, partida.minutes, partida.seconds)
     for event in pygame.event.get():
-        if (not ended):
+        if (not partida.ended):
             if event.type == pygame.QUIT:
                 running = False
         
@@ -127,147 +97,143 @@ while running:
                 ##### CHECk ####
                 if button_check.collidepoint(event.pos):
                     window.blit(text_output_window,(420,830))
-                    if (len(selected)==3) :
-                        if (game_logics.check(list_tablero[selected[0]],
-                                list_tablero[selected[1]],
-                                list_tablero[selected[2]])): 
+                    if (len(partida.selected)==3) :
+                        if (game_logics.check(partida.list_tablero[partida.selected[0]],
+                                partida.list_tablero[partida.selected[1]],
+                                partida.list_tablero[partida.selected[2]])): 
                             game_logics.draw_output_text(text_output_window,"SET CORRECTO!",config.G, window)
-                            config.points = config.points + 1
-                            game_logics.write_points(text_points_window, window)
-                            if hint :
-                                hint = False
-                                game_logics.draw_button_hint(button_hint,hint, window)
-                                if (h!= "NULL"): #realmente este caso no se puede dar, porque si hay un set, h no es NULL
-                                    mark = game_logics.mark_hint(cartas[list_tablero.index(h)],False,window)
-                            new = game_logics.select_three_list_cartas(list_cartas) 
+                            partida.points = partida.points + 1
+                            game_logics.write_points(text_points_window, window, partida.points, partida.minutes, partida.seconds)
+                            if partida.hint :
+                                partida.hint = False
+                                game_logics.draw_button_hint(button_hint,partida.hint, window)
+                                if (partida.hint_card is not FileNotFoundError): #realmente este caso no se puede dar, porque si hay un set, hint_card no es None
+                                    partida.mark = game_logics.mark_hint(partida.cartas[partida.list_tablero.index(h)],False,window)
+                            new = game_logics.select_three_list_cartas(partida.list_cartas)
+
                             if (new == "NULL"):
-                                ret = game_logics.change_three(selected, ('NULL','NULL','NULL'), selected, list_tablero, window)
-                                cartas = ret[0]
-                                sets = ret[1]
-                                selected = ret[2]
-                                list_tablero = ret[3]
+                                ret = game_logics.change_three(partida.selected, ('NULL','NULL','NULL'), partida.selected, partida.list_tablero, window)
+                                partida.cartas = ret[0]
+                                partida.sets = ret[1]
+                                partida.selected = ret[2]
+                                partida.list_tablero = ret[3]
                                 game_logics.draw_output_text(text_output_window,"NO QUEDAN CARTAS!",config.R, window)
                             else:
-                                list_cartas = game_logics.eliminar_seleccionadas(new, list_cartas)
-                                ret = game_logics.change_tablero(new, selected, list_tablero, window)
-                                cartas = ret[0]
-                                sets = ret[1]
-                                selected = ret[2]
-                                list_tablero = ret[3]
-                            
-                        else : game_logics.draw_output_text(text_output_window,"ESO NO ES UN SET!",config.R, window)
+                                partida.list_cartas = game_logics.eliminar_seleccionadas(new, partida.list_cartas)
+                                ret = game_logics.change_tablero(new, partida.selected, partida.list_tablero, window)
+                                partida.cartas = ret[0]
+                                partida.sets = ret[1]
+                                partida.selected = ret[2]
+                                partida.list_tablero = ret[3]
+
+                                print ("Cartas en la baraja restantes:", partida.list_cartas.__len__())
+                            if (partida.list_cartas.__len__() + 12 < 21):
+                                combinaciones_restantes = game_logics.generar_combinaciones(partida.list_tablero+partida.list_cartas)  
+                                sets_still = game_logics.check_table (combinaciones_restantes)  
+                                if len(sets_still) == 0:
+                                    print ("NO QUEDAN SETS POSIBLES!")
+                                    button_gameover = game_logics.load_end(partida, window)
+                                    partida.ended = True
+                        else : 
+                            game_logics.draw_output_text(text_output_window,"ESO NO ES UN SET!",config.R, window)
+                            partida.error_counts += 1
                     else : game_logics.draw_output_text(text_output_window,"LOS SETS SON DE 3 CARTAS!",config.R, window)
 
                 #### NEW GAME ####
                 if button_newgame.collidepoint(event.pos):
-                    if hint :
-                        hint = False
-                        game_logics.draw_button_hint(button_hint,hint, window)
+                    if partida.hint :
+                        partida.hint = False
+                        game_logics.draw_button_hint(button_hint,partida.hint, window)
                         if (h!= "NULL"):
-                            mark = game_logics.mark_hint(cartas[list_tablero.index(h)],False,window)
+                            partida.mark = game_logics.mark_hint(partida.cartas[partida.list_tablero.index(h)],False,window)
+                     
+                    partida = game_logics.new_game()
+                    ret = game_logics.init_tablero(partida.list_cartas, window)
+                    partida.cartas, partida.sets, partida.selected, partida.list_tablero = ret
+                    partida.list_cartas = game_logics.eliminar_seleccionadas(partida.list_tablero, partida.list_cartas) 
 
-
-                    window.blit(tablero_surface,(0,0))
-                    window.blit(text_output_window,(420,830))
-                    list_cartas = game_logics.generar_list_cartas()
-                    ret = game_logics.init_tablero(list_cartas, window)
-                    cartas = ret[0]
-                    sets = ret[1]
-                    selected = ret [2]
-                    list_tablero = ret[3]
-                    list_cartas = game_logics.eliminar_seleccionadas(list_tablero, list_cartas)
-                    config.points = 0
-                    game_logics.write_points(text_points_window, window)
+                    game_logics.write_points(text_points_window, window, partida.points, partida.minutes, partida.seconds)
                     game_logics.draw_output_text(text_output_window,"PARTIDA NUEVA",(0,0,0), window)
 
                 #### CHANGE THREE ####
                 if button_change_three.collidepoint(event.pos):
+                    partida.hint_card = game_logics.show_hint(partida.sets)
+                    if partida.hint :
+                        partida.hint = False
+                        game_logics.draw_button_hint(button_hint,partida.hint, window)
+                        if (partida.hint_card is not None):
+                            partida.mark = game_logics.mark_hint(partida.cartas[partida.list_tablero.index(partida.hint_card)],False,window)
                     
-                    h = game_logics.show_hint(sets)
-                    if hint :
-                        hint = False
-                        game_logics.draw_button_hint(button_hint,hint, window)
-                        if (h!= "NULL"):
-                            mark = game_logics.mark_hint(cartas[list_tablero.index(h)],False,window)
-
-                    if (h == "NULL"):
+                    if (partida.hint_card is None):
                         game_logics.draw_output_text(text_output_window,"NO HABÍA NINGUN SET!",config.R, window)
                     else : 
-                        config.points = config.points - 1
-                        game_logics.write_points(text_points_window, window)
-                        game_logics.draw_output_text(text_output_window,"-1 punto por cambiar cartas",config.R, window)
+                        partida.change3_counts += 1
+                        game_logics.draw_output_text(text_output_window,"Cambio usado",config.R, window)
 
                     #Debe escoger 3 cartas del tablero, guardarlas de nuevo en la lista de cartas, y sacar 3.
-                    old_three = game_logics.select_three_list_tablero(list_tablero)
-                    new_three = game_logics.select_three_list_cartas(list_cartas)
+                    old_three = game_logics.select_three_list_tablero(partida.list_tablero)
+                    new_three = game_logics.select_three_list_cartas(partida.list_cartas)
                     if (new_three == "NULL"):
                         game_logics.draw_output_text(text_output_window,"NO QUEDAN CARTAS!",config.R, window)
                     else:
                         #Saca de list_cartas las 3 nuevas cartas. Vuelve a meter las cartas que estaban en el tablero
-                        ret = game_logics.change_three(old_three,new_three,selected, list_tablero, window)
-                        cartas = ret[0]
-                        sets = ret[1]
-                        selected = ret[2]
-                        list_tablero = ret[3]
-                        list_cartas = game_logics.change_lista_cartas(old_three,new_three, list_cartas)
-                
+                        ret = game_logics.change_three(old_three,new_three,partida.selected, partida.list_tablero, window)
+                        partida.cartas = ret[0]
+                        partida.sets = ret[1]
+                        partida.selected = ret[2]
+                        partida.list_tablero = ret[3]
+                        partida.list_cartas = game_logics.change_lista_cartas(old_three,new_three, partida.list_cartas)
+                    partida.hint_card = game_logics.show_hint(partida.sets)
+
 
                 #### HINT ####
                 if button_hint.collidepoint(event.pos):
                     window.blit(text_output_window,(420,830))
-                    hint = not hint
-                    game_logics.draw_button_hint(button_hint,hint, window)
-                    if hint : 
-                        h = game_logics.show_hint(sets)
-                        if (h == "NULL"):
+                    partida.hint = not partida.hint
+                    game_logics.draw_button_hint(button_hint,partida.hint, window)
+                    if partida.hint : 
+                        partida.hint_card = game_logics.show_hint(partida.sets)
+                        if (partida.hint_card is None):
                             game_logics.draw_output_text(text_output_window,"NO HAY NINGUN SET!",config.R, window)
                         else : 
-                            mark = game_logics.mark_hint(cartas[list_tablero.index(h)],True, window)
+                            partida.mark = game_logics.mark_hint(partida.cartas[partida.list_tablero.index(partida.hint_card)],True, window)
+                            partida.hint_counts += 1
                         
-                    else: game_logics.mark_selection(mark,config.GREY,False, window)
+                    else: game_logics.mark_selection(partida.mark,config.GREY,False, window)
 
                 #### CLICKS ####
                 mouse_buttons = pygame.mouse.get_pressed()  # Obtener estado de los botones
                 # Comprobar qué botón fue presionado
                 if mouse_buttons[0]:
-                    selected = game_logics.check_position(event.pos, window, text_output_window, cartas, selected)
+                    partida.selected = game_logics.check_position(event.pos, window, text_output_window, partida.cartas, partida.selected)
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_e:
-                    button_gameover = load_end()
-                    #button_gameover = pygame.Rect(x+50, y+350, 400, 60)
-                    #game_logics.draw_button(button_gameover,"Volver a jugar", window)
-                    ended = True       
+                    button_gameover = game_logics.load_end(partida, window)
+                    partida.ended = True       
                 if event.key == pygame.K_s: #Save estado
-                    estado = game_state.GameState(list_cartas, list_tablero, selected, sets, config.points, hint, mark)
-                    estado.save()
+                    partida.save()
                     game_logics.draw_output_text(text_output_window,"ESTADO GUARDADO",(0,0,0), window)
 
                 if event.key == pygame.K_l: #Load estado
-                    estado = game_state.GameState.load()
-                    list_cartas = estado.list_cartas
-                    list_tablero = estado.list_tablero
-                    selected = estado.selected
-                    sets = estado.sets
-                    config.points = estado.points
-                    hint = estado.hint
-                    mark = estado.mark
-                    cartas = game_logics.draw_table(800,800, window)
+                    partida = game_state.GameState.load()
                     
-                    game_logics.write_points(text_points_window, window)
-                    game_logics.draw_tablero(list_tablero,cartas, window)
-                    for idx in selected:
-                        game_logics.mark_selection(cartas[idx],(255,255,100), False, window)
+                    partida.cartas = game_logics.draw_table(800,800, window)
+
+                    game_logics.write_points(text_points_window, window, partida.points, partida.minutes, partida.seconds)
+                    game_logics.draw_tablero(partida.list_tablero,partida.cartas, window)
+                    for idx in partida.selected:
+                        game_logics.mark_selection(partida.cartas[idx],(255,255,100), False, window)
                     game_logics.draw_output_text(text_output_window,"ESTADO CARGADO",(0,0,0), window)
-                    if hint : 
-                        h = game_logics.show_hint(sets)
-                        if (h == "NULL"):
+                    if partida.hint : 
+                        partida.hint_card = game_logics.show_hint(partida.sets)
+                        if (partida.hint_card is None):
                             game_logics.draw_output_text(text_output_window,"NO HAY NINGUN SET!",config.R, window)
                         else : 
-                            mark = game_logics.mark_hint(cartas[list_tablero.index(h)],True, window)
-                        
+                            partida.mark = game_logics.mark_hint(partida.cartas[partida.list_tablero.index(partida.hint_card)],True, window)
+
                     else:
-                        game_logics.mark_selection(mark,config.GREY,False, window)
+                        game_logics.mark_selection(partida.mark,config.GREY,False, window)
                     
 
         else:

@@ -3,6 +3,8 @@ import random
 import pygame
 import config
 import graphics
+import game_state
+
 
 # # Logica tablero y cartas
 
@@ -275,12 +277,12 @@ def draw_output_text(surface,text,color, window):
     text_rect = text_surface.get_rect(topleft=(center_x+420, center_y+830))
     window.blit(text_surface, text_rect)  # Posición del texto
 
-def write_points(surface, window):
+def write_points(surface, window, points, minutes, seconds):
     surface.fill(config.WHITE)  # Fondo blanco para la ventana
     window.blit(surface, (420, 910))  # Mostrar la superficie del output en la parte inferior
 
     font = pygame.font.Font(None, 32)
-    text = "Points: " + str(config.points) 
+    text = "Points: " + str(points) 
     text_surface = font.render(text, True, (0,0,0))
 
     text_width, text_height = text_surface.get_size()
@@ -288,7 +290,13 @@ def write_points(surface, window):
     center_x = (surface.get_width() - text_width) // 2
     center_y = (surface.get_height() - text_height) // 2
 
-    text_rect = text_surface.get_rect(topleft=(center_x+420, center_y+910))
+    text_rect = text_surface.get_rect(topleft=(center_x+340, center_y+910))
+
+    window.blit(text_surface, text_rect)  # Posición del texto
+
+    text_surface = font.render(f"Time: {minutes:02}:{seconds:02}", True, (0,0,0))
+    text_rect = text_surface.get_rect(topleft=(center_x+460, center_y+910))
+
     window.blit(text_surface, text_rect)  # Posición del texto
 
 # # GRAFICOS
@@ -313,3 +321,73 @@ def draw_table(width,height, window):
     return cartas
 
 
+def load_end(partida, window):
+#gestion final
+    print("gameover")
+    x = config.WIDTH//2 - 250
+    y = config.HEIGHT//2 - 250
+
+    # Crea una superficie para el fondo del gameover
+    gameover_surface = pygame.Surface((config.WIDTH, config.HEIGHT))
+    gameover_surface.fill((120,120,120))
+    window.blit(gameover_surface, (0, 0))
+
+    # Crea una superficie para el cuadro de texto del gameover
+    gameover_surface = pygame.Surface((450, 450))
+    gameover_surface.fill((200,200,200))
+    window.blit(gameover_surface, (x+25, y+25))
+
+
+    font = pygame.font.Font(None, 55)
+    text_surface = font.render("PARTIDA TERMINADA", True, config.G)
+    text_rect = text_surface.get_rect(center=(x+50+200, y+75))
+    window.blit(text_surface, text_rect.topleft)
+
+    font = pygame.font.Font(None, 30)
+    text_surface = font.render("No quedan más sets por encontrar", True, config.G)
+    text_rect = text_surface.get_rect(center=(x+50+200, y+110))
+    window.blit(text_surface, text_rect.topleft)
+
+    font = pygame.font.Font(None, 30)
+    text_surface = font.render("Sets obtenidos: "+str(partida.points), True, config.G)
+    text_rect = text_surface.get_rect(center=(x+50+200, y+175))
+    window.blit(text_surface, text_rect.topleft)
+    text_surface = font.render(f"Tiempo total: {partida.minutes:02}:{partida.seconds:02}", True, config.G)
+    text_rect = text_surface.get_rect(center=(x+50+200, y+200))
+    window.blit(text_surface, text_rect.topleft)
+    text_surface = font.render("Pistas: "+str(partida.hint_counts), True, config.G)
+    text_rect = text_surface.get_rect(center=(x+50+200, y+225))
+    window.blit(text_surface, text_rect.topleft)
+    text_surface = font.render("Cambios: "+str(partida.change3_counts), True, config.G)
+    text_rect = text_surface.get_rect(center=(x+50+200, y+250))
+    window.blit(text_surface, text_rect.topleft)
+    text_surface = font.render("Errores: "+str(partida.error_counts), True, config.G)
+    text_rect = text_surface.get_rect(center=(x+50+200, y+275))
+    window.blit(text_surface, text_rect.topleft)
+    
+    font = pygame.font.Font(None, 45)
+    text_surface = font.render("Puntos finales: "+str(partida.final_score()), True, config.G)
+    text_rect = text_surface.get_rect(center=(x+50+200, y+325))
+    window.blit(text_surface, text_rect.topleft)
+    button_gameover = pygame.Rect(x+150, y+370, 200, 60)
+    draw_button(button_gameover,"Volver a jugar", window)
+    return button_gameover
+
+
+def new_game():
+    partida = game_state.GameState()
+
+    partida.hint = False
+    partida.hint_card = None
+    partida.ended = False
+    partida.mark = None
+    partida.points = 0
+    partida.time = pygame.time.get_ticks()
+    partida.minutes = 0
+    partida.seconds = 0
+    partida.change3_counts = 0
+    partida.hint_counts = 0
+    partida.error_counts = 0
+    partida.list_cartas = generar_list_cartas()
+
+    return partida

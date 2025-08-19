@@ -46,8 +46,9 @@ CARD_HEIGHT : Final = 184  #120*1.5454
 
 # Puntos acumulados en una partida
 points = 0
-
-
+hint_counts = 0
+error_counts = 0
+change3_counts = 0
 
 #numero posicional de las cartas seleccionadas por el usuario. 
 #Entre 0 y 11. 
