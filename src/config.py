@@ -44,18 +44,3 @@ HEIGHT : Final = 1000
 CARD_WIDTH : Final = 120
 CARD_HEIGHT : Final = 184  #120*1.5454
 
-# Puntos acumulados en una partida
-points = 0
-hint_counts = 0
-error_counts = 0
-change3_counts = 0
-
-#numero posicional de las cartas seleccionadas por el usuario. 
-#Entre 0 y 11. 
-#Máximo se permite seleccionar 3 cartas
-selected = []
-
-# Total de cartas:
-# Con estas caracteristicas, hay un total de 3⁴ = 3*3*3*3 = 81 cartas
-global list_cartas
-list_cartas = []

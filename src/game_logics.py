@@ -4,6 +4,7 @@ import pygame
 import config
 import graphics
 import game_state
+import game_renderer
 
 
 # # Logica tablero y cartas
@@ -84,6 +85,9 @@ def change_three(old, new, selected, list_tablero, window):
     for c in list_tablero:
         deal_cards(c,cartas[i],window)
         i = i + 1
+        print (f"Carta: {c}")
+
+    print (f"Cartas: {cartas}")
     return (cartas, sets, selected, list_tablero)
 
 def eliminar_seleccionadas(eliminar, list_cartas):
@@ -168,12 +172,14 @@ def deal_cards(c,pos,window):
         case "D":
             graphics.draw_diamond(color,numero,relleno,pos, window)   
 
-def check_position(event_pos, window, text_output_window, cartas, selected):
+def check_position(event_pos, window, text_output_window, list_tablero,cartas, selected):
     #Comprueba la posicion en la que se ha clicado
     i = 0
     for c in cartas:
         if c.collidepoint(event_pos):
             #Se ha clicado una carta
+            print (f"La carta clicada es: {c}")
+            print(f"Que contiene: {list_tablero[i]}")
             window.blit(text_output_window,(420,830))
             if (i in selected):
                 #Si la carta estaba seleccionada, la deselecciona
@@ -181,13 +187,17 @@ def check_position(event_pos, window, text_output_window, cartas, selected):
                 mark_selection(c,(255,255,255),False,window)
             else :
                 #Si no estaba seleccionada, comprueba cuantas habia seleccionadas
-                if (len(selected)<3) : 
+                if (len(selected)<3 and list_tablero[i]!="NULL") : 
                     #Si habia menos de 3, la selecciona
                     selected.append(i)
                     print (c)
                     mark_selection(c,(255,255,100),False,window)
                 #Si hay 3 seleccionada, no selecciona la clicada e informa de que maximo se pueden seleccionar 3
-                else : draw_output_text(text_output_window,"SOLO PUEDES SELECCIONAR 3!",config.R, window)
+                else:
+                    if (list_tablero[i]=="NULL"):
+                        draw_output_text(text_output_window,"NO SELECCIONABLE!",config.R, window)
+                    else:
+                        draw_output_text(text_output_window,"SOLO PUEDES SELECCIONAR 3!",config.R, window)
             #Devuelve selected (con las posiciones de 0 a 11 de las cartas seleccionadas)
             return selected
         i = i+1
@@ -208,7 +218,7 @@ def mark_hint(carta,hint,window):
 
 def show_hint(sets):
     if not sets:
-        return "NULL"
+        return None
 
     card_freq = {}
     for s in sets:
@@ -321,59 +331,6 @@ def draw_table(width,height, window):
     return cartas
 
 
-def load_end(partida, window):
-#gestion final
-    print("gameover")
-    x = config.WIDTH//2 - 250
-    y = config.HEIGHT//2 - 250
-
-    # Crea una superficie para el fondo del gameover
-    gameover_surface = pygame.Surface((config.WIDTH, config.HEIGHT))
-    gameover_surface.fill((120,120,120))
-    window.blit(gameover_surface, (0, 0))
-
-    # Crea una superficie para el cuadro de texto del gameover
-    gameover_surface = pygame.Surface((450, 450))
-    gameover_surface.fill((200,200,200))
-    window.blit(gameover_surface, (x+25, y+25))
-
-
-    font = pygame.font.Font(None, 55)
-    text_surface = font.render("PARTIDA TERMINADA", True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+75))
-    window.blit(text_surface, text_rect.topleft)
-
-    font = pygame.font.Font(None, 30)
-    text_surface = font.render("No quedan más sets por encontrar", True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+110))
-    window.blit(text_surface, text_rect.topleft)
-
-    font = pygame.font.Font(None, 30)
-    text_surface = font.render("Sets obtenidos: "+str(partida.points), True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+175))
-    window.blit(text_surface, text_rect.topleft)
-    text_surface = font.render(f"Tiempo total: {partida.minutes:02}:{partida.seconds:02}", True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+200))
-    window.blit(text_surface, text_rect.topleft)
-    text_surface = font.render("Pistas: "+str(partida.hint_counts), True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+225))
-    window.blit(text_surface, text_rect.topleft)
-    text_surface = font.render("Cambios: "+str(partida.change3_counts), True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+250))
-    window.blit(text_surface, text_rect.topleft)
-    text_surface = font.render("Errores: "+str(partida.error_counts), True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+275))
-    window.blit(text_surface, text_rect.topleft)
-    
-    font = pygame.font.Font(None, 45)
-    text_surface = font.render("Puntos finales: "+str(partida.final_score()), True, config.G)
-    text_rect = text_surface.get_rect(center=(x+50+200, y+325))
-    window.blit(text_surface, text_rect.topleft)
-    button_gameover = pygame.Rect(x+150, y+370, 200, 60)
-    draw_button(button_gameover,"Volver a jugar", window)
-    return button_gameover
-
-
 def new_game():
     partida = game_state.GameState()
 
@@ -382,7 +339,8 @@ def new_game():
     partida.ended = False
     partida.mark = None
     partida.points = 0
-    partida.time = pygame.time.get_ticks()
+    partida.elapsed_time = 0
+    partida.start_ticks = pygame.time.get_ticks()
     partida.minutes = 0
     partida.seconds = 0
     partida.change3_counts = 0
@@ -391,3 +349,131 @@ def new_game():
     partida.list_cartas = generar_list_cartas()
 
     return partida
+
+def handle_newgame(partida, window, ui):
+    """
+    Reinicia la partida y devuelve el nuevo estado
+    """
+    #Si hay pista actida, la desactiva y quita la marca
+    if partida.hint :
+        partida.hint = False
+        draw_button_hint(ui["button_hint"],partida.hint, window)
+        if (partida.hint_card is not None):
+            partida.mark = mark_hint(partida.cartas[partida.list_tablero.index(partida.hint_card)],False,window)
+
+    #Crea una nueva partida
+    partida = new_game()
+
+    #Inicializa el tablero con las nuevas cartas
+    cartas, sets, selected, list_tablero = init_tablero(partida.list_cartas, window)
+    partida.cartas = cartas
+    partida.sets = sets
+    partida.selected = selected
+    partida.list_tablero = list_tablero
+
+    #Quita del mazo las cartas que están en el tablero
+    partida.list_cartas = eliminar_seleccionadas(partida.list_tablero, partida.list_cartas) 
+
+    #Actualiza los textos
+    write_points(ui["text_points_window"], window, partida.points, partida.minutes, partida.seconds)
+    draw_output_text(ui["text_output_window"],"PARTIDA NUEVA",(0,0,0), window)
+
+    return partida
+
+def handle_change_three(partida, window, ui):
+    """
+    Maneja el cambio de 3 cartas en la partida
+    """
+    #Si hay pista actida, la desactiva y quita la marca
+    if partida.hint :
+        partida.hint = False
+        draw_button_hint(ui["button_hint"],partida.hint, window)
+        if (partida.hint_card is not None):
+            partida.mark = mark_hint(partida.cartas[partida.list_tablero.index(partida.hint_card)],False,window)
+    
+    #Si no había sets en el tablero, informa al usuario y suma cambio (el numero de cambios usados resta puntos)
+    if (partida.hint_card is None):
+        draw_output_text(ui["text_output_window"],"NO HABÍA NINGUN SET!",config.G, window)
+    #Si había sets, suma cambio (el numero de cambios usados resta puntos)
+    else : 
+        partida.change3_counts += 1
+        draw_output_text(ui["text_output_window"],"CAMBIO USADO",config.R, window)
+
+    #Debe escoger 3 cartas del tablero, guardarlas de nuevo en la lista de cartas, y sacar 3.
+    old_three = select_three_list_tablero(partida.list_tablero)
+    new_three = select_three_list_cartas(partida.list_cartas)
+    #Si las cartas nuevas son NULL, significa que no quedan más cartas en la baraja.
+    if (new_three == "NULL"):
+        draw_output_text(ui["text_output_window"],"NO QUEDAN CARTAS!",config.R, window)
+    else:
+        #Saca de list_cartas las 3 nuevas cartas. Vuelve a meter las cartas que estaban en el tablero
+        ret = change_three(old_three,new_three,partida.selected, partida.list_tablero, window)
+        partida.cartas = ret[0]
+        partida.sets = ret[1]
+        partida.selected = ret[2]
+        partida.list_tablero = ret[3]
+        partida.list_cartas = change_lista_cartas(old_three,new_three, partida.list_cartas)
+    partida.hint_card = show_hint(partida.sets)
+    return partida
+
+def handle_hint (partida, window, ui):
+    window.blit(ui["text_output_window"],(420,830))
+    partida.hint = not partida.hint
+    draw_button_hint(ui["button_hint"],partida.hint, window)
+    if partida.hint : 
+        partida.hint_card = show_hint(partida.sets)
+        if (partida.hint_card is None):
+            draw_output_text(ui["text_output_window"],"NO HAY NINGUN SET!",config.R, window)
+        else : 
+            partida.mark = mark_hint(partida.cartas[partida.list_tablero.index(partida.hint_card)],True, window)
+            partida.hint_counts += 1
+        
+    else: 
+        if partida.mark is not None: mark_selection(partida.mark,config.GREY,False, window)
+    return partida
+
+
+def handle_check(partida, window, ui):
+    button_gameover = None
+    window.blit(ui["text_output_window"],(420,830))
+    if (len(partida.selected)==3) :
+        if (check(partida.list_tablero[partida.selected[0]],
+                partida.list_tablero[partida.selected[1]],
+                partida.list_tablero[partida.selected[2]])): 
+            draw_output_text(ui["text_output_window"],"SET CORRECTO!",config.G, window)
+            partida.points = partida.points + 1
+            write_points(ui["text_points_window"], window, partida.points, partida.minutes, partida.seconds)
+            if partida.hint :
+                partida.hint = False
+                draw_button_hint(ui["button_hint"],partida.hint, window)
+                if (partida.hint_card is not FileNotFoundError): #realmente este caso no se puede dar, porque si hay un set, hint_card no es None
+                    partida.mark = mark_hint(partida.cartas[partida.list_tablero.index(partida.hint_card)],False,window)
+            new = select_three_list_cartas(partida.list_cartas)
+
+            if (new == "NULL"):
+                cartas, sets, selected, list_tablero = change_three(partida.selected, ('NULL','NULL','NULL'), partida.selected, partida.list_tablero, window)
+                draw_output_text(ui["text_output_window"],"NO QUEDAN CARTAS!",config.R, window)
+            else:
+                partida.list_cartas = eliminar_seleccionadas(new, partida.list_cartas)
+                cartas, sets, selected, list_tablero = change_tablero(new, partida.selected, partida.list_tablero, window)
+
+            partida.cartas = cartas
+            partida.sets = sets
+            partida.selected = selected
+            partida.list_tablero = list_tablero
+            print ("Cartas en la baraja restantes:", partida.list_cartas.__len__())
+ 
+            if (partida.list_cartas.__len__() + 12 < 21):
+                #Según teoría combinatoria de los Sets, si el maximo numero de cartas posible sin formar un set son 20,
+                #es decir, con 21 cartas SIEMPRE hay un set
+                combinaciones_restantes = generar_combinaciones(partida.list_tablero+partida.list_cartas)  
+                sets_still = check_table (combinaciones_restantes)  
+                if len(sets_still) == 0:
+                    print ("NO QUEDAN SETS POSIBLES!")
+                    button_gameover = game_renderer.draw_gameover_screen(partida, window)
+                    partida.ended = True
+        else : 
+            draw_output_text(ui["text_output_window"],"ESO NO ES UN SET!",config.R, window)
+            partida.error_counts += 1
+    else : draw_output_text(ui["text_output_window"],"LOS SETS SON DE 3 CARTAS!",config.R, window)
+    return (partida, button_gameover)

@@ -1,3 +1,4 @@
+import pygame
 class GameState:
     def __init__(self,
                 list_cartas = None,
@@ -13,7 +14,8 @@ class GameState:
                 hint_counts = 0,
                 error_counts = 0,
                 change3_counts = 0,
-                time = 0,
+                elapsed_time = 0,
+                start_ticks = 0,
                 minutes = 0,
                 seconds = 0):
         
@@ -30,12 +32,15 @@ class GameState:
         self.hint_counts = hint_counts
         self.error_counts = error_counts
         self.change3_counts = change3_counts
-        self.time = time
+        self.elapsed_time = elapsed_time
+        self.start_ticks = pygame.time.get_ticks()
         self.minutes = minutes
         self.seconds = seconds
 
     def save(self, filename="estado_juego.pkl"):
         import pickle
+        self.elapsed_time += (pygame.time.get_ticks() - self.start_ticks) // 1000
+        self.start_ticks = pygame.time.get_ticks()
         with open(filename, "wb") as f:
             pickle.dump(self, f)
 
